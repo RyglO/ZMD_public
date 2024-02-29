@@ -1,6 +1,7 @@
 package jpeg;
 import Jama.Matrix;
 import enums.ColorType;
+import enums.SamplingType;
 import graphics.Dialogs;
 
 import java.awt.*;
@@ -45,6 +46,10 @@ public class Process {
         originalY = new Matrix(imageHeight, imageWidth);
         originalCb = new Matrix(imageHeight, imageWidth);
         originalCr = new Matrix(imageHeight, imageWidth);
+
+        modifiedY = new Matrix(imageHeight, imageWidth);
+        modifiedCb = new Matrix(imageHeight, imageWidth);
+        modifiedCr = new Matrix(imageHeight, imageWidth);
         setOriginalRGB();
     }
     /**
@@ -89,9 +94,9 @@ public class Process {
     public BufferedImage showOneColorImageFromRGB(int[][] color, enums.ColorType type)
     {
         BufferedImage bfImage = new BufferedImage(
-                imageWidth, imageHeight, BufferedImage.TYPE_INT_RGB);
-        for (int h = 0; h < imageHeight; h++) {
-            for (int w = 0; w < imageWidth; w++) {
+                color.length, color[0].length, BufferedImage.TYPE_INT_RGB);
+        for (int h = 0; h < bfImage.getHeight(); h++) {
+            for (int w = 0; w < bfImage.getWidth(); w++) {
                 switch (type) {
                     case RED:
                         bfImage.setRGB(w, h, (new Color(color[h][w], 0, 0)).getRGB());
@@ -118,10 +123,10 @@ public class Process {
     public BufferedImage showOneColorImageFromYCbCr(Matrix color)
     {
         BufferedImage bfImage = new BufferedImage(
-                imageWidth, imageHeight,
+                color.getColumnDimension(), color.getRowDimension(),
                 BufferedImage.TYPE_INT_RGB);
-        for(int h = 0; h < imageHeight; h++){
-            for (int w = 0; w < imageWidth; w++) {
+        for(int h = 0; h < bfImage.getHeight(); h++){
+            for (int w = 0; w < bfImage.getWidth(); w++) {
                 bfImage.setRGB(w,h,
                         (new Color((int)color.get(h,w),
                                 (int)color.get(h,w),
@@ -136,7 +141,7 @@ public class Process {
      */
     public void convertToRGB()
     {
-        int[][][] pom = ColorTransform.convertModifiedYcBcRtoRGB(originalY, originalCb, originalCr);
+        int[][][] pom = ColorTransform.convertModifiedYcBcRtoRGB(modifiedY, modifiedCb, modifiedCr);
         modifiedRed = pom[0];
         modifiedGreen = pom[1];
         modifiedBlue = pom[2];
@@ -147,10 +152,30 @@ public class Process {
     public void convertToYCbCr()
     {
         Matrix[] pom = ColorTransform.convertOriginalRGBtoYcBcR(originalRed, originalGreen, originalBlue);
-        originalY = pom[0];
-        originalCb = pom[1];
-        originalCr = pom[2];
+        originalY = modifiedY = pom[0];
+        originalCb = modifiedCb = pom[1];
+        originalCr = modifiedCr = pom[2];
     }
+
+    /**
+     * Metoda pro downsample obrazu
+     * @param samplingType Druh operace, který má být proveden.
+     */
+    public void downSample(SamplingType samplingType)
+    {
+        modifiedCb = ColorSampling.sampleDown(modifiedCr, samplingType);
+        modifiedCr = ColorSampling.sampleDown(modifiedCb, samplingType);
+    }
+    /**
+     * Metoda pro upsample obrazu
+     * @param samplingType Druh operace, který má být proveden.
+     */
+    public void upSample(SamplingType samplingType){
+        modifiedCb = ColorSampling.sampleUp(modifiedCr, samplingType);
+        modifiedCr = ColorSampling.sampleUp(modifiedCr, samplingType);
+    }
+
+
 
     //Volání na základě stisku tlačítek pro zobrazení konkrétní barevné složky.
     public BufferedImage showOrigBlue()
@@ -201,4 +226,5 @@ public class Process {
     {
         return  showOneColorImageFromYCbCr(modifiedCr);
     }
+
 }

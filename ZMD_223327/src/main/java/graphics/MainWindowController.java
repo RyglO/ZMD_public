@@ -174,11 +174,19 @@ public class MainWindowController implements Initializable {
     }
 
     public void sample() {
-
+        try {
+            process.downSample(sampling.getValue());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void inverseSample() {
-
+        try {
+            process.upSample(sampling.getValue());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void transform() {
