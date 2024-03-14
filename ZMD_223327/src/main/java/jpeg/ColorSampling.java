@@ -6,12 +6,6 @@ import Jama.Matrix;
 public class ColorSampling {
 
 
-    /**
-     * Veřejná metoda, která provede down sampling tak, jak je definován ve skriptech
-     * @param inputMatrix Vstulní matice, která se bude upravovat
-     * @param samplingType Typ vzorkování, které se provede
-     * @return Vrací se výsledná matice
-     */
     public static Matrix sampleDown(Matrix inputMatrix, SamplingType samplingType)
     {
         Matrix sampledMatrix = null;
@@ -33,12 +27,6 @@ public class ColorSampling {
         return sampledMatrix;
     }
 
-    /**
-     * Veřejná metoda, která provede up sampling operace tak, jak jsou definovány ve skriptech
-     * @param inputMatrix Vstupní matice, ze které se vytvoří výsledek
-     * @param samplingType Druh vzorkování
-     * @return Výsledná upravená matice
-     */
     public static Matrix sampleUp(Matrix inputMatrix, SamplingType samplingType)
     {
         Matrix sampledMatrix = null;
@@ -61,11 +49,7 @@ public class ColorSampling {
 
     }
 
-    /**
-     * Pomocná privátní metoda, která vezme matrix a smaže každý druhý sloupec.
-     * @param matrix Vstupní map
-     * @return Upravený metrix
-     */
+
     private static Matrix downSample(Matrix matrix){
         int rowsCount = matrix.getRowDimension();
         int columnsCount = matrix.getColumnDimension();
@@ -78,12 +62,6 @@ public class ColorSampling {
         }
         return new Matrix(newMatrix);
     }
-
-    /**
-     * Privátní pomocná metoda, která provede up sampling operaci
-     * @param matrix Vstupní matice
-     * @return Opravená matice
-     */
     private static Matrix upSample(Matrix matrix){
         Matrix newMatrix = new Matrix(matrix.getRowDimension(), matrix.getColumnDimension()*2);
         for (int i = 0; i < matrix.getColumnDimension(); i++) {

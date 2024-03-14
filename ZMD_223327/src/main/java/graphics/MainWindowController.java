@@ -2,6 +2,8 @@ package graphics;
 
 import core.FileBindings;
 import core.Helper;
+import enums.ColorType;
+import enums.QualityType;
 import enums.SamplingType;
 import enums.TransformType;
 import javafx.collections.FXCollections;
@@ -46,23 +48,37 @@ public class MainWindowController implements Initializable {
     TextField qualityMSE;
     @FXML
     TextField qualityPSNR;
+    @FXML
+    TextField qualityMAE;
+    @FXML
+    TextField qualitySAE;
+    @FXML
+    TextField qualitySSIM;
+    @FXML
+    TextField qualityMSSID;
+    @FXML
+    Button countPSNR;
+    @FXML
+    Button countSSIM;
 
     @FXML
     Slider quantizeQuality;
     @FXML
     TextField quantizeQualityField;
-
     @FXML
     CheckBox shadesOfGrey;
     @FXML
     CheckBox showSteps;
-
     @FXML
     Spinner<Integer> transformBlock;
     @FXML
     ComboBox<TransformType> transformType;
     @FXML
     ComboBox<SamplingType> sampling;
+    @FXML
+    ComboBox<QualityType> comboColorsType;
+    @FXML
+    ComboBox<QualityType> comboSSIMtype;
 
     private Process process;
     /**
@@ -73,12 +89,15 @@ public class MainWindowController implements Initializable {
         // Nastavení všech hodnot do combo boxů
         sampling.getItems().setAll(SamplingType.values());
         transformType.getItems().setAll(TransformType.values());
+        comboColorsType.getItems().setAll(QualityType.values());
+        comboSSIMtype.getItems().setAll(QualityType.Y,QualityType.Cb,QualityType.Cr);
+
+
 
         // Nastavení výchozích hodnot
         sampling.getSelectionModel().select(SamplingType.S_4_4_4);
         transformType.getSelectionModel().select(TransformType.DCT);
         quantizeQuality.setValue(50);
-
         // Vytvoření listu možností, které budou uvnitř spinneru
         ObservableList<Integer> blocks = FXCollections.observableArrayList(2, 4, 8, 16, 32, 64, 128, 256, 512);
         SpinnerValueFactory<Integer> spinnerValues = new SpinnerValueFactory.ListSpinnerValueFactory<>(blocks);
@@ -190,11 +209,11 @@ public class MainWindowController implements Initializable {
     }
 
     public void transform() {
-
+        process.transformImage(transformType.getValue(), false, transformBlock.getValue());
     }
 
     public void inverseTransform() {
-
+        process.transformImage(transformType.getValue(), true, transformBlock.getValue());
     }
 
     public void quantize() {
@@ -205,7 +224,21 @@ public class MainWindowController implements Initializable {
 
     }
 
-    public void countQuality() {
+    public void countPSNR() {
+        process.MAEcount();
+        process.MSEcount();
+        process.SAEcount();
+    }
+    public void changeValuesQuality()
+    {
+        process.GetQualityValues(comboColorsType.getValue());
+        qualityMSE.textProperty().set(String.format("%.4f", process.mse));
+        qualityMAE.textProperty().set(String.format("%.4f", process.mae));
+        qualitySAE.textProperty().set(String.format("%.4f", process.sae));
+        qualityPSNR.textProperty().set(String.format("%.4f", process.psnr));
+    }
+
+    public void countSSIM(){
 
     }
 

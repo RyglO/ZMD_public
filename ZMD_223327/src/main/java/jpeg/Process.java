@@ -1,7 +1,9 @@
 package jpeg;
 import Jama.Matrix;
 import enums.ColorType;
+import enums.QualityType;
 import enums.SamplingType;
+import enums.TransformType;
 import graphics.Dialogs;
 
 import java.awt.*;
@@ -24,6 +26,13 @@ public class Process {
     private Matrix originalY, modifiedY;
     private Matrix originalCb, modifiedCb;
     private Matrix originalCr, modifiedCr;
+
+    public double mse, sae, mae, psnr, ssim, mssim;
+    private double redMSE, blueMSE, greenMSE, yMSE, cbMSE, crMSE;
+    private double redSAE, blueSAE, greenSAE, ySAE, cbSAE, crSAE;
+    private double redMAE, blueMAE, greenMAE, yMAE, cbMAE, crMAE;
+    private double redPSNR, bluePSNR, greenPSNR, yPSNR, cbPSNR, crPSNR;
+
 
 
     /**
@@ -128,12 +137,16 @@ public class Process {
         for(int h = 0; h < bfImage.getHeight(); h++){
             for (int w = 0; w < bfImage.getWidth(); w++) {
                 bfImage.setRGB(w,h,
-                        (new Color((int)color.get(h,w),
-                                (int)color.get(h,w),
-                                (int)color.get(h,w)).getRGB()));
+                        (new Color(roundRange(color.get(h,w)),
+                                roundRange(color.get(h,w)),
+                                roundRange(color.get(h,w))).getRGB()));
             }
         }
         return bfImage;
+    }
+    //Need this for Y, Cb, Cr transformed 
+    public static int roundRange(double num) {
+        return Math.min(Math.max((int) Math.round(num), 0), 255);
     }
     /**
      * Přepočet z originální grayscale do upraveného RGB
@@ -157,22 +170,44 @@ public class Process {
         originalCr = modifiedCr = pom[2];
     }
 
-    /**
-     * Metoda pro downsample obrazu
-     * @param samplingType Druh operace, který má být proveden.
-     */
     public void downSample(SamplingType samplingType)
     {
         modifiedCb = ColorSampling.sampleDown(modifiedCr, samplingType);
         modifiedCr = ColorSampling.sampleDown(modifiedCb, samplingType);
     }
-    /**
-     * Metoda pro upsample obrazu
-     * @param samplingType Druh operace, který má být proveden.
-     */
     public void upSample(SamplingType samplingType){
         modifiedCb = ColorSampling.sampleUp(modifiedCr, samplingType);
         modifiedCr = ColorSampling.sampleUp(modifiedCr, samplingType);
+    }
+
+    public String PSNRcount(QualityType qualityType){
+
+        return "";
+    }
+    public void MAEcount(){
+        redMAE = Quality.countMAE(convertIntToDouble(originalRed), convertIntToDouble(modifiedRed));
+        greenMAE = Quality.countMAE(convertIntToDouble(originalGreen), convertIntToDouble(modifiedGreen));
+        blueMAE = Quality.countMAE(convertIntToDouble(originalBlue), convertIntToDouble(modifiedBlue));
+        yMAE =  Quality.countMAE(originalY.getArray(), modifiedY.getArray());
+        cbMAE =  Quality.countMAE(originalCb.getArray(), modifiedCb.getArray());
+        crMAE =  Quality.countMAE(originalCr.getArray(), modifiedCr.getArray());
+    }
+    public void MSEcount(){
+        redMSE = Quality.countMSE(convertIntToDouble(originalRed), convertIntToDouble(modifiedRed));
+        greenMSE = Quality.countMSE(convertIntToDouble(originalGreen), convertIntToDouble(modifiedGreen));
+        blueMSE = Quality.countMSE(convertIntToDouble(originalBlue), convertIntToDouble(modifiedBlue));
+        yMSE =  Quality.countMSE(originalY.getArray(), modifiedY.getArray());
+        cbMSE =  Quality.countMSE(originalCb.getArray(), modifiedCb.getArray());
+        crMSE =  Quality.countMSE(originalCr.getArray(), modifiedCr.getArray());
+    }
+    public void SAEcount(){
+
+        redSAE = Quality.countSAE(convertIntToDouble(originalRed), convertIntToDouble(modifiedRed));
+        greenSAE = Quality.countSAE(convertIntToDouble(originalGreen), convertIntToDouble(modifiedGreen));
+        blueSAE = Quality.countSAE(convertIntToDouble(originalBlue), convertIntToDouble(modifiedBlue));
+        ySAE =  Quality.countSAE(originalY.getArray(), modifiedY.getArray());
+        cbSAE =  Quality.countSAE(originalCb.getArray(), modifiedCb.getArray());
+        crSAE =  Quality.countSAE(originalCr.getArray(), modifiedCr.getArray());
     }
 
 
@@ -225,6 +260,87 @@ public class Process {
     public BufferedImage showModifCr()
     {
         return  showOneColorImageFromYCbCr(modifiedCr);
+    }
+
+
+
+    public static double[][] convertIntToDouble(int[][] intArray) {
+        double[][] doubleArray = new double[intArray.length][intArray[0].length];
+        for (int i = 0; i < intArray.length; i++) {
+            for (int j = 0; j < intArray[0].length; j++) {
+                doubleArray[i][j] = (double) intArray[i][j];
+            }
+        }
+        return doubleArray;
+    }
+
+    public void GetQualityValues(QualityType color)
+    {
+        switch (color){
+            case Red:
+                mae = redMAE;
+                sae = redSAE;
+                mse = redMSE;
+                psnr = Quality.countPSNR(redMSE);
+                break;
+            case Green:
+                mae = greenMAE;
+                sae = greenSAE;
+                mse = greenMSE;
+                psnr = Quality.countPSNR(greenMSE);
+                break;
+            case Blue:
+                mae = blueMAE;
+                sae = blueSAE;
+                mse = blueMSE;
+                psnr = Quality.countPSNR(blueMSE);
+                break;
+            case Y:
+                mae = yMAE;
+                sae = ySAE;
+                mse = yMSE;
+                psnr = Quality.countPSNR(yMSE);
+                break;
+            case Cb:
+                mae = cbMAE;
+                sae = cbSAE;
+                mse = cbMSE;
+                psnr = Quality.countPSNR(cbMSE);
+                break;
+            case Cr:
+                mae = crMAE;
+                sae = crSAE;
+                mse = crMSE;
+                psnr = Quality.countPSNR(crMSE);
+                break;
+            case RGB:
+                mae = (redMAE + greenMAE + blueMAE) /3;
+                sae = (redSAE + greenSAE + blueSAE) /3;
+                mse = (redMSE + greenMSE + blueSAE) /3;
+                psnr = Quality.countPSNR(mse);
+                break;
+            case YCbCr:
+                mae = (yMAE + cbMAE + crMAE) /3;
+                sae = (ySAE + cbSAE + crSAE) /3;
+                mse = (yMSE + cbMSE + crSAE) /3;
+                psnr = Quality.countPSNR(mse);
+                break;
+
+        }
+    }
+
+    //Transformace
+    public void transformImage(TransformType type, Boolean inverse, int blockSize){
+        if(inverse){
+            modifiedY = Transform.inverseTransform(modifiedY, type, blockSize);
+            modifiedCb = Transform.inverseTransform(modifiedCb, type, blockSize);
+            modifiedCr = Transform.inverseTransform(modifiedCr, type, blockSize);
+        }
+        else{
+            modifiedY = Transform.transform(modifiedY, type, blockSize);
+            modifiedCb = Transform.transform(modifiedCb, type, blockSize);
+            modifiedCr = Transform.transform(modifiedCr, type, blockSize);
+        }
     }
 
 }
