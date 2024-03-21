@@ -50,7 +50,7 @@ public class ColorSampling {
     }
 
 
-    private static Matrix downSample(Matrix matrix){
+    public static Matrix downSample(Matrix matrix){
         int rowsCount = matrix.getRowDimension();
         int columnsCount = matrix.getColumnDimension();
         double[][] newMatrix = new double[rowsCount][columnsCount/2];
@@ -62,7 +62,7 @@ public class ColorSampling {
         }
         return new Matrix(newMatrix);
     }
-    private static Matrix upSample(Matrix matrix){
+    public static Matrix upSample(Matrix matrix){
         Matrix newMatrix = new Matrix(matrix.getRowDimension(), matrix.getColumnDimension()*2);
         for (int i = 0; i < matrix.getColumnDimension(); i++) {
             newMatrix.setMatrix(0, matrix.getRowDimension()-1, 2*i, 2*i, matrix.getMatrix(0, matrix.getRowDimension()-1, i, i));

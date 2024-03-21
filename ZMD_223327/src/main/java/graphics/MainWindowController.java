@@ -217,11 +217,11 @@ public class MainWindowController implements Initializable {
     }
 
     public void quantize() {
-
+        process.quantizeImage(transformBlock.getValue(), quantizeQuality.getValue(), false);
     }
 
     public void inverseQuantize() {
-
+        process.quantizeImage(transformBlock.getValue(), quantizeQuality.getValue(), true);
     }
 
     public void countPSNR() {

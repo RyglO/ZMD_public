@@ -316,7 +316,7 @@ public class Process {
             case RGB:
                 mae = (redMAE + greenMAE + blueMAE) /3;
                 sae = (redSAE + greenSAE + blueSAE) /3;
-                mse = (redMSE + greenMSE + blueSAE) /3;
+                mse = (redMSE + greenMSE + blueMSE) /3;
                 psnr = Quality.countPSNR(mse);
                 break;
             case YCbCr:
@@ -342,5 +342,20 @@ public class Process {
             modifiedCr = Transform.transform(modifiedCr, type, blockSize);
         }
     }
+
+    //Kvantizace
+    public void quantizeImage(int blockSize, double quality, Boolean inverse ){
+        if(inverse){
+            modifiedY = Quantization.inverseQuantize(modifiedY, blockSize, quality, true);
+            modifiedCb = Quantization.inverseQuantize(modifiedCb, blockSize, quality, false);
+            modifiedCr = Quantization.inverseQuantize(modifiedCr, blockSize, quality, false);
+        }
+        else{
+            modifiedY = Quantization.quantize(modifiedY, blockSize, quality, true);
+            modifiedCb = Quantization.quantize(modifiedCb, blockSize, quality, false);
+            modifiedCr = Quantization.quantize(modifiedCr, blockSize, quality, false);
+        }
+    }
+
 
 }
